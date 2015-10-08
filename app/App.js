@@ -5,7 +5,7 @@ var App = React.createClass({
   render: function() {
     return (
       <div className="container">
-        <div className="row" sty>
+        <div className="row">
           <TaskContainer />
         </div>
       </div>
