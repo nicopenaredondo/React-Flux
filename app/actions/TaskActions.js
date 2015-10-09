@@ -8,6 +8,22 @@ var TaskActions = {
       actionType: AppConstants.ADD_TASK,
       data: task
     });
+  },
+
+  completeTask: function(task){
+    console.log('TaskActions: completeTask()');
+    AppDispatcher.handleAction({
+      actionType: AppConstants.COMPLETE_TASK,
+      data: task
+    });
+  },
+
+  removeTask: function(index){
+    console.log('TaskActions: removeTask()');
+    AppDispatcher.handleAction({
+      actionType: AppConstants.REMOVE_TASK,
+      data: index
+    });
   }
 };
 

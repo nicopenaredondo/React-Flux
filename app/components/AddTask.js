@@ -18,6 +18,7 @@ var AddTask = React.createClass({
   handleAddNew: function(e){
 
     var newTask = {
+      id: Math.floor((new Date().getTime() * 100) + 1),
       name : this.state.newTask,
       created: new Date().toLocaleString()
     };
