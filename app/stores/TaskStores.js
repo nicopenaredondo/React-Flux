@@ -7,7 +7,8 @@ var CHANGE_EVENT = 'change';
 
 var _store = {
   tasks: [],
-  completedTasks: []
+  completedTasks: [],
+  editMode: false
 };
 
 var addTask = function(task){
@@ -23,6 +24,11 @@ var completeTask = function(task){
 var removeTask = function(index){
   console.log('TaskStores: removeTask()');
   _store.tasks.splice(index, 1);
+};
+
+var editMode = function(){
+  console.log('TaskStores: editMode()');
+  _store.editMode = true;
 };
 
 var TaskStores = objectAssign({}, EventEmitter.prototype, {
@@ -42,6 +48,10 @@ var TaskStores = objectAssign({}, EventEmitter.prototype, {
 
   getCompletedTasks: function(){
     return _store.completedTasks;
+  },
+
+  isEditMode: function(){
+    return _store.editMode;
   }
 });
 
@@ -64,6 +74,11 @@ AppDispatcher.register(function(payload){
       case AppConstants.REMOVE_TASK:
         console.log('TaskStores: App Dispatcher Remove Task');
         removeTask(action.data);
+      break;
+
+      case AppConstants.EDIT_TASK:
+        console.log('TaskStores: App Dispatcher Edit Task');
+        editMode();
       break;
 
 

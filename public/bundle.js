@@ -18920,8 +18920,8 @@
 	var React = __webpack_require__(1);
 	var AddTask = __webpack_require__(149);
 	var TaskList = __webpack_require__(150);
-	var TaskStores = __webpack_require__(152);
-	var TaskActions = __webpack_require__(159);
+	var TaskStores = __webpack_require__(158);
+	var TaskActions = __webpack_require__(152);
 
 	var TaskContainer = React.createClass({displayName: "TaskContainer",
 
@@ -18929,7 +18929,7 @@
 	    return {
 	      title: 'Create new task form',
 	      tasks: TaskStores.getTasks(),
-	      completed: TaskStores.getCompletedTasks()
+	      completed: TaskStores.getCompletedTasks(),
 	    }
 	  },
 
@@ -18937,6 +18937,7 @@
 	    console.log('TaskContainer: componentDidMount()');
 	    TaskStores.addChangeListener(this._onChange);
 	  },
+
 
 	  componentWillUnmount: function(){
 	    console.log('TaskContainer: componentWillUnmount()');
@@ -18963,10 +18964,12 @@
 	    console.log('TaskContainer: _onChange()');
 	    this.setState({
 	      tasks: TaskStores.getTasks(),
-	      completed: TaskStores.getCompletedTasks()
+	      completed: TaskStores.getCompletedTasks(),
+	      editMode: TaskStores.isEditMode()
 	    });
 	    console.log('List of Completed Task');
 	    console.log(this.state.completed);
+	    console.log('Edit Mode: '+ TaskStores.isEditMode());
 	  },
 
 	  render: function() {
@@ -19076,24 +19079,13 @@
 	var Task = __webpack_require__(151);
 	var TaskList = React.createClass({displayName: "TaskList",
 
-	  completeTask: function(task) {
-	    this.props.completeTask(task.data);
-	    this.props.removeTask(task.index);
-	  },
-
-	  removeTask: function(index){
-	    this.props.removeTask(index);
-	  },
-
 	  render: function() {
 	    var listOfTasks = this.props.tasks.map(function(task, index){
 	      return (
 	        React.createElement(Task, {
 	          key: index, 
 	          index: index, 
-	          task: task, 
-	          complete: this.completeTask, 
-	          remove: this.removeTask}
+	          task: task}
 	        )
 	      )
 	    },this);
@@ -19121,20 +19113,21 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
+	var TaskActions = __webpack_require__(152);
 
 	var Task = React.createClass({displayName: "Task",
 
 	  handleComplete: function(){
-	    var task = {
-	      index: this.props.index,
-	      data: this.props.task
-	    };
-
-	    this.props.complete(task);
+	    TaskActions.completeTask(this.props.task);
+	    this.handleRemove();
 	  },
 
 	  handleRemove: function(){
-	    this.props.remove(this.props.index);
+	    TaskActions.removeTask(this.props.index);
+	  },
+
+	  handleEdit: function(){
+	    TaskActions.editTask();
 	  },
 
 	  render: function() {
@@ -19143,8 +19136,9 @@
 	        React.createElement("td", null,  this.props.task.name), 
 	        React.createElement("td", null,  this.props.task.created), 
 	        React.createElement("td", null, 
-	          React.createElement("a", {className: "btn btn-xs btn-success", onClick: this.handleComplete}, "Completed"), 
-	          React.createElement("a", {className: "btn btn-xs btn-danger", onClick: this.handleRemove}, "Remove")
+	          React.createElement("a", {className: "btn btn-xs btn-info", onClick: this.handleComplete}, "Completed"), 
+	          React.createElement("a", {className: "btn btn-xs btn-danger", onClick: this.handleRemove}, "Remove"), 
+	          React.createElement("a", {className: "btn btn-xs btn-warning", onClick: this.handleEdit}, "Edit")
 	        )
 	      )
 	    );
@@ -19158,83 +19152,43 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(153);
-	var AppConstants  = __webpack_require__(157);
-	var objectAssign  = __webpack_require__(19);
-	var EventEmitter  = __webpack_require__(158).EventEmitter;
+	var AppConstants = __webpack_require__(157);
 
-	var CHANGE_EVENT = 'change';
+	var TaskActions = {
 
-	var _store = {
-	  tasks: [],
-	  completedTasks: []
-	};
-
-	var addTask = function(task){
-	  console.log('TaskStores: addTask()');
-	  _store.tasks.push(task);
-	};
-
-	var completeTask = function(task){
-	  console.log('TaskStores: completeTask()');
-	  _store.completedTasks.push(task);
-	};
-
-	var removeTask = function(index){
-	  console.log('TaskStores: removeTask()');
-	  _store.tasks.splice(index, 1);
-	};
-
-	var TaskStores = objectAssign({}, EventEmitter.prototype, {
-	  addChangeListener: function(cb){
-	    console.log('TaskStores: addChangeListener()');
-	    this.on(CHANGE_EVENT, cb);
+	  addTask: function(task){
+	    console.log('TaskActions: addTask()');
+	    AppDispatcher.handleAction({
+	      actionType: AppConstants.ADD_TASK,
+	      data: task
+	    });
 	  },
 
-	  removeChangeListener: function(cb){
-	    console.log('TaskStores: removeChangeListener()');
-	    this.on(CHANGE_EVENT, cb);
+	  completeTask: function(task){
+	    console.log('TaskActions: completeTask()');
+	    AppDispatcher.handleAction({
+	      actionType: AppConstants.COMPLETE_TASK,
+	      data: task
+	    });
 	  },
 
-	  getTasks: function(){
-	    return _store.tasks;
+	  removeTask: function(index){
+	    console.log('TaskActions: removeTask()');
+	    AppDispatcher.handleAction({
+	      actionType: AppConstants.REMOVE_TASK,
+	      data: index
+	    });
 	  },
 
-	  getCompletedTasks: function(){
-	    return _store.completedTasks;
+	  editTask: function(){
+	    AppDispatcher.handleAction({
+	      actionType: AppConstants.EDIT_TASK
+	    });
 	  }
-	});
+	};
 
-	AppDispatcher.register(function(payload){
-	  console.log('TaskStores: AppDispatcher.register()');
-	  var action = payload.action;
+	module.exports = TaskActions;
 
-	  switch(action.actionType){
-
-	      case AppConstants.ADD_TASK:
-	        console.log('TaskStores: App Dispatcher Add Task');
-	        addTask(action.data);
-	      break;
-
-	      case AppConstants.COMPLETE_TASK:
-	        console.log('TaskStores: App Dispatcher Complete Task');
-	        completeTask(action.data);
-	      break;
-
-	      case AppConstants.REMOVE_TASK:
-	        console.log('TaskStores: App Dispatcher Remove Task');
-	        removeTask(action.data);
-	      break;
-
-
-
-	      default:
-	        return true;
-	  }
-
-	  TaskStores.emit(CHANGE_EVENT);
-	});
-
-	module.exports = TaskStores;
 
 /***/ },
 /* 153 */
@@ -19567,13 +19521,112 @@
 	var AppConstants = {
 	  ADD_TASK: 'ADD_TASK',
 	  COMPLETE_TASK: 'COMPLETE_TASK',
-	  REMOVE_TASK: 'REMOVE_TASK'
+	  REMOVE_TASK: 'REMOVE_TASK',
+	  EDIT_TASK: 'EDIT_TASK'
 	};
 
 	module.exports = AppConstants;
 
 /***/ },
 /* 158 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(153);
+	var AppConstants  = __webpack_require__(157);
+	var objectAssign  = __webpack_require__(19);
+	var EventEmitter  = __webpack_require__(159).EventEmitter;
+
+	var CHANGE_EVENT = 'change';
+
+	var _store = {
+	  tasks: [],
+	  completedTasks: [],
+	  editMode: false
+	};
+
+	var addTask = function(task){
+	  console.log('TaskStores: addTask()');
+	  _store.tasks.push(task);
+	};
+
+	var completeTask = function(task){
+	  console.log('TaskStores: completeTask()');
+	  _store.completedTasks.push(task);
+	};
+
+	var removeTask = function(index){
+	  console.log('TaskStores: removeTask()');
+	  _store.tasks.splice(index, 1);
+	};
+
+	var editMode = function(){
+	  console.log('TaskStores: editMode()');
+	  _store.editMode = true;
+	};
+
+	var TaskStores = objectAssign({}, EventEmitter.prototype, {
+	  addChangeListener: function(cb){
+	    console.log('TaskStores: addChangeListener()');
+	    this.on(CHANGE_EVENT, cb);
+	  },
+
+	  removeChangeListener: function(cb){
+	    console.log('TaskStores: removeChangeListener()');
+	    this.on(CHANGE_EVENT, cb);
+	  },
+
+	  getTasks: function(){
+	    return _store.tasks;
+	  },
+
+	  getCompletedTasks: function(){
+	    return _store.completedTasks;
+	  },
+
+	  isEditMode: function(){
+	    return _store.editMode;
+	  }
+	});
+
+	AppDispatcher.register(function(payload){
+	  console.log('TaskStores: AppDispatcher.register()');
+	  var action = payload.action;
+
+	  switch(action.actionType){
+
+	      case AppConstants.ADD_TASK:
+	        console.log('TaskStores: App Dispatcher Add Task');
+	        addTask(action.data);
+	      break;
+
+	      case AppConstants.COMPLETE_TASK:
+	        console.log('TaskStores: App Dispatcher Complete Task');
+	        completeTask(action.data);
+	      break;
+
+	      case AppConstants.REMOVE_TASK:
+	        console.log('TaskStores: App Dispatcher Remove Task');
+	        removeTask(action.data);
+	      break;
+
+	      case AppConstants.EDIT_TASK:
+	        console.log('TaskStores: App Dispatcher Edit Task');
+	        editMode();
+	      break;
+
+
+
+	      default:
+	        return true;
+	  }
+
+	  TaskStores.emit(CHANGE_EVENT);
+	});
+
+	module.exports = TaskStores;
+
+/***/ },
+/* 159 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -19874,42 +19927,6 @@
 	function isUndefined(arg) {
 	  return arg === void 0;
 	}
-
-
-/***/ },
-/* 159 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var AppDispatcher = __webpack_require__(153);
-	var AppConstants = __webpack_require__(157);
-
-	var TaskActions = {
-	  addTask: function(task){
-	    console.log('TaskActions: addTask()');
-	    AppDispatcher.handleAction({
-	      actionType: AppConstants.ADD_TASK,
-	      data: task
-	    });
-	  },
-
-	  completeTask: function(task){
-	    console.log('TaskActions: completeTask()');
-	    AppDispatcher.handleAction({
-	      actionType: AppConstants.COMPLETE_TASK,
-	      data: task
-	    });
-	  },
-
-	  removeTask: function(index){
-	    console.log('TaskActions: removeTask()');
-	    AppDispatcher.handleAction({
-	      actionType: AppConstants.REMOVE_TASK,
-	      data: index
-	    });
-	  }
-	};
-
-	module.exports = TaskActions;
 
 
 /***/ }

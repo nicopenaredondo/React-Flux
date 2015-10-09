@@ -10,7 +10,7 @@ var TaskContainer = React.createClass({
     return {
       title: 'Create new task form',
       tasks: TaskStores.getTasks(),
-      completed: TaskStores.getCompletedTasks()
+      completed: TaskStores.getCompletedTasks(),
     }
   },
 
@@ -18,6 +18,7 @@ var TaskContainer = React.createClass({
     console.log('TaskContainer: componentDidMount()');
     TaskStores.addChangeListener(this._onChange);
   },
+
 
   componentWillUnmount: function(){
     console.log('TaskContainer: componentWillUnmount()');
@@ -44,10 +45,12 @@ var TaskContainer = React.createClass({
     console.log('TaskContainer: _onChange()');
     this.setState({
       tasks: TaskStores.getTasks(),
-      completed: TaskStores.getCompletedTasks()
+      completed: TaskStores.getCompletedTasks(),
+      editMode: TaskStores.isEditMode()
     });
     console.log('List of Completed Task');
     console.log(this.state.completed);
+    console.log('Edit Mode: '+ TaskStores.isEditMode());
   },
 
   render: function() {

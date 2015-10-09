@@ -2,6 +2,7 @@ var AppDispatcher = require('../dispatchers/AppDispatcher');
 var AppConstants = require('../constants/AppConstants');
 
 var TaskActions = {
+
   addTask: function(task){
     console.log('TaskActions: addTask()');
     AppDispatcher.handleAction({
@@ -23,6 +24,12 @@ var TaskActions = {
     AppDispatcher.handleAction({
       actionType: AppConstants.REMOVE_TASK,
       data: index
+    });
+  },
+
+  editTask: function(){
+    AppDispatcher.handleAction({
+      actionType: AppConstants.EDIT_TASK
     });
   }
 };

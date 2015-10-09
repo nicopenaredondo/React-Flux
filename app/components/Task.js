@@ -1,18 +1,19 @@
 var React = require('react');
+var TaskActions = require('../actions/TaskActions');
 
 var Task = React.createClass({
 
   handleComplete: function(){
-    var task = {
-      index: this.props.index,
-      data: this.props.task
-    };
-
-    this.props.complete(task);
+    TaskActions.completeTask(this.props.task);
+    this.handleRemove();
   },
 
   handleRemove: function(){
-    this.props.remove(this.props.index);
+    TaskActions.removeTask(this.props.index);
+  },
+
+  handleEdit: function(){
+    TaskActions.editTask();
   },
 
   render: function() {
@@ -21,8 +22,9 @@ var Task = React.createClass({
         <td>{ this.props.task.name }</td>
         <td>{ this.props.task.created }</td>
         <td>
-          <a className="btn btn-xs btn-success" onClick={this.handleComplete}>Completed</a>
+          <a className="btn btn-xs btn-info" onClick={this.handleComplete}>Completed</a>
           <a className="btn btn-xs btn-danger" onClick={this.handleRemove}>Remove</a>
+          <a className="btn btn-xs btn-warning" onClick={this.handleEdit}>Edit</a>
         </td>
       </tr>
     );
